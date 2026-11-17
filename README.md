@@ -18,6 +18,33 @@ This is a **case study and reference implementation, not a universal one-command
 
 No firmware partitions were flashed or made writable. No blanket removal of system services was performed. Ads inside YouTube, Plex, broadcasts, or other third-party content are not blocked by this project.
 
+## Initial Setup - USER REQUIRED
+
+- Signup for a LG Developer Account: https://webostv.developer.lge.com/develop/getting-started/developer-mode-app
+_Note: Use the login at the top right and then signup there_
+
+### TV Setup
+- Install Developer Mode from LG Content Store
+- Signin to App, Enable both Developer mode (reboot required) and Key Server in the TV App
+
+### PC Setup CLI (Terminal Setup)
+- Install Packages
+```
+npm install -g @webosose/ares-cli
+```
+- Connect to TV (Select Add and follow prompts)
+```
+ares-setup-device 
+```
+- Enter TV Key
+```
+ares-novacom --device tv2 --getkey
+```
+- Verify Connection
+```
+OPENSSL_ENABLE_SHA1_SIGNATURES=1 ares-device --system-info --device tv2
+```
+
 ## Read in order
 
 1. [Access, SSH troubleshooting, and rooting](docs/01-access.md)
