@@ -25,8 +25,9 @@ Keep Quick Start+ off when prioritizing clean startup over rapid power-on. [LG's
 | Home/advertising | Key route, mounts, settings and custom foreground survived reboot | Native Home remains resident |
 | Navigation | Arrow/OK opened YouTube, Plex and HDMI 1 | Not every remote button tested |
 | Inputs | All six destination IDs reached foreground and Home returned | No connected-source picture/audio test |
-| AirPlay/HomeKit | Dedicated services stopped; UI launch lock added | Final hook not reboot-tested |
-| Optional apps | All 13 launch attempts rejected with -102; dedicated services absent | Final hooks not reboot-tested |
+| AirPlay/HomeKit | Dedicated services absent after follow-up reboot; UI launch lock installed | Not a network-wide block |
+| Optional apps | All 13 launch attempts rejected with -102 after follow-up reboot; dedicated services absent | Locks depend on application-manager state |
+| LG firmware updates | Homebrew flag true, updater stopped, executable blocked and update hostnames loopback after reboot | Early boot precedes Homebrew; no router policy installed |
 | Preserved apps | Plex, YouTube, HDMI 1 and minimal Home reached foreground | Launch success is not playback verification |
 | Daily background | TV screenshot visually checked; date logic tested locally | No live clock manipulation or midnight wait |
 

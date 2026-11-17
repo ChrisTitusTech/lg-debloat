@@ -5,6 +5,8 @@ Keep rollback scripts and the actual saved configuration on the TV and on the wo
 Run the relevant script in a root TV shell:
 
 ```sh
+# Remove firmware-update protection (reboot afterward):
+sh /var/lib/lg-debloat/updates/rollback.sh
 # Restore optional apps and Screen Share:
 sh /var/lib/lg-debloat/optional/rollback.sh
 # Restore AirPlay/HomeKit (edit restored settings to match your saved originals):

@@ -39,7 +39,7 @@ Compatibility was checked against the TV's actual firmware/OTA information, then
 4. Use [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) to configure root SSH and install a dedicated public key.
 5. Verify a fresh key-authenticated connection, `id` returning root, and access after reboot.
 
-Developer Mode was removed as part of this root method. Do not reinstall it into this rooted setup without consulting the method's instructions. Root SSH is a different connection from the old `prisoner` account on port 9922. Telnet was disabled. Firmware-update blocking was left off; no ongoing root compatibility with future updates is claimed.
+Developer Mode was removed as part of this root method. Do not reinstall it into this rooted setup without consulting the method's instructions. Root SSH is a different connection from the old `prisoner` account on port 9922. Telnet was disabled. Firmware-update blocking was initially left off, then enabled in the [post-install protection step](09-post-install-updates.md). No ongoing root compatibility with future updates is claimed.
 
 ## Reuse one authenticated SSH connection
 

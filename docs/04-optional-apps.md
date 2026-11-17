@@ -67,4 +67,4 @@ initctl status miracast
 
 Verify every selected ID, then confirm Plex, YouTube, inputs, Settings and Home still function. Check that dedicated processes remain absent after app switching. Do not sum renderer RSS values as guaranteed savings.
 
-The hooks are installed for persistence but were not reboot-tested in the original final state. An unexpected restart of the application manager can also discard runtime locks until they are reapplied. The reference is not a permanent on-disk uninstall or an access-control guarantee.
+The initial installation was not reboot-tested. A follow-up reboot during firmware-update protection deployment verified the 13 launch locks and absence of the dedicated Apple/optional service processes. An unexpected restart of the application manager can also discard runtime locks until they are reapplied. The reference is not a permanent on-disk uninstall or an access-control guarantee.

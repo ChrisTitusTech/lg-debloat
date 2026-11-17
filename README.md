@@ -13,6 +13,7 @@ This is a **case study and reference implementation, not a universal one-command
 - Installed a local Home screen with YouTube, Plex, HDMI 1-3, Live TV, AV, and Component.
 - Added short-press Home routing and a held-Home fallback to LG Home.
 - Disabled AirPlay/HomeKit and 13 optional app entries using service controls, reversible executable overlays, and app launch locks.
+- Added post-install firmware-update blocking with a dedicated startup hook.
 - Added seven offline landscape photographs, changing by local calendar day and repeating weekly.
 
 No firmware partitions were flashed or made writable. No blanket removal of system services was performed. Ads inside YouTube, Plex, broadcasts, or other third-party content are not blocked by this project.
@@ -27,6 +28,7 @@ No firmware partitions were flashed or made writable. No blanket removal of syst
 6. [Performance findings and verification limits](docs/06-results.md)
 7. [Rollback and recovery](docs/07-rollback.md)
 8. [Public repository privacy policy](docs/08-privacy.md)
+9. **[Post-install: block LG firmware updates](docs/09-post-install-updates.md)**
 
 ## Repository layout
 
@@ -35,6 +37,7 @@ No firmware partitions were flashed or made writable. No blanket removal of syst
 | `app/` | ES5-compatible webOS Home app; public ID `org.example.minimalhome` |
 | `tv/home/` | Home key filter, advertising overlays, startup and rollback references |
 | `tv/airplay/` | AirPlay/HomeKit disabling and rollback references |
+| `tv/updates/` | Post-install LG firmware updater blocking and rollback |
 | `tv/optional/` | Explicit 13-app selection, inert web app overlays, launch locks |
 | `assets/landscapes.json` | Public source URLs, license labels, and image checksums |
 | `tools/` | Local image download, rollback-payload preparation, privacy checks |
@@ -59,7 +62,7 @@ The image downloader uses only Python's standard library. The TV never downloads
 
 ## Important limits
 
-Root access was verified after reboot. The initial Home routing, advertising overlays, and settings also survived reboot. The later AirPlay/optional-app startup hooks were installed and tested live, but **were not reboot-tested**. A boot hook runs after early startup, not before every LG process can start.
+Root access was verified after reboot. The initial Home routing, advertising overlays, and settings also survived reboot. A follow-up reboot verified firmware-update blocking, absence of the disabled Apple/optional service processes, and all 13 optional-app launch locks. A boot hook runs after early startup, not before every LG process can start.
 
 The original LG Home remains loaded for compatibility. This project does not promise a measured speedup, full firmware recovery, or compatibility with other TVs. Keep input handling, WebAppMgr, the compositor, media/DRM, and core TV services.
 
