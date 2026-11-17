@@ -1,0 +1,11 @@
+{
+  "id": "com.webos.app.brandshop",
+  "title": "Brand Shop",
+  "version": "1.0.0",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "supportQuickStart": false,
+  "usePrerendering": false
+}

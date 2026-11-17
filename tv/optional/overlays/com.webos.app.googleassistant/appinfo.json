@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.googleassistant",
+  "title": "Google Assistant",
+  "version": "2.1.0",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

@@ -1,0 +1,19 @@
+The MIT license covers original code and documentation in this repository.
+LG, webOS, YouTube, Plex, Alexa, AirPlay and other names identify compatible
+products or functions; no affiliation or endorsement is implied.
+
+Landscape image files are not tracked. The downloader retrieves US Fish &
+Wildlife Service source variants whose individual pages label them Public
+Domain. Exact sources and integrity hashes are in assets/landscapes.json.
+The site credits include USFWS, Steve Hillebrand/USFWS and Scott Rheam/USFWS;
+consult each source page for the complete attribution. The app displays the
+collection credit, and this repository makes no ownership claim over photos.
+
+No LG logos, firmware payloads, original LG manifests or upstream exploit
+scripts are included. Public app overlays are purpose-written inert pages.
+The Home-key API approach was investigated using the TV's native key filter
+interface and the Glasshouse remote-key implementation as a reference:
+https://github.com/rorygallagher2024/glasshouse/blob/6ffc51445095ac0cbc891291ac399c93a8e82c45/server/lib/remotekeys.js
+The small filter in this repository is independently written.
+
+The package icon is generated from original geometric drawing code.

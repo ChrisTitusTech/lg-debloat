@@ -1,0 +1,26 @@
+# Private device state and build output must never enter Git.
+/private/
+/dist/
+/backups/
+/logs/
+.env
+.env.*
+*.pem
+*.key
+*.ipk
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.sock
+known_hosts
+pairing.json
+*client-key*
+__pycache__/
+*.pyc
+/app/backgrounds/*.jpg
+/app/backgrounds/*.jpeg
+/app/backgrounds/*.png
+
+/app/icon.png
+/app/backgrounds/*.part

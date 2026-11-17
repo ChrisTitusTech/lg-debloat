@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.cheeringtv",
+  "title": "Cheering Mode",
+  "version": "1.0.13",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

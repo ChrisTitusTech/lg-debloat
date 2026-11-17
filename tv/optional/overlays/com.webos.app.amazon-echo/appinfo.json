@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.amazon-echo",
+  "title": "Link to Amazon Alexa Devices",
+  "version": "1.0.1",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

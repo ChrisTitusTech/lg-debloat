@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.browser",
+  "title": "Web Browser",
+  "version": "4.9.14",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "title": "Alaska lake sunset",
+    "file": "backgrounds/sunset-lake-tetlin-national-wildlife-refuge.jpg",
+    "source": "https://www.fws.gov/media/sunset-lake-tetlin-national-wildlife-refuge",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/images/2024-03-5/14590.jpg?itok=sWov2-ls",
+    "license": "Public Domain (source page)",
+    "size": 672383,
+    "dimensions": "Large (1300 x 867)",
+    "sha256": "17471aaf3ee842ebb1283beabefadd9d71aa80eb0eadadda0e5fa0e5fa0ffc2d"
+  },
+  {
+    "title": "Mountain vista",
+    "file": "backgrounds/scenic-mountains.jpg",
+    "source": "https://www.fws.gov/media/scenic-mountains",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/images/2016-07/24097.jpg?itok=VLGeVj9x",
+    "license": "Public Domain (source page)",
+    "size": 990492,
+    "dimensions": "Large (1300 x 867)",
+    "sha256": "07162ab09ca9db8702e763af8c0af53a5f0b725d1d1983b217977bc2d2ca9600"
+  },
+  {
+    "title": "Smoky Mountains",
+    "file": "backgrounds/scenic-view-great-smokey-mountains-national-park.jpg",
+    "source": "https://www.fws.gov/media/scenic-view-great-smokey-mountains-national-park",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/images/2024-03-4/10820.jpg?itok=p7uhtyhM",
+    "license": "Public Domain (source page)",
+    "size": 788107,
+    "dimensions": "Large (1300 x 871)",
+    "sha256": "4941fc1d8f68f533f6be95aace3f826824c361cf147c7f815c510c164c560503"
+  },
+  {
+    "title": "Desert panorama",
+    "file": "backgrounds/desert-panorama.jpg",
+    "source": "https://www.fws.gov/media/desert-panorama",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/images/2024-03-1/1858.jpg?itok=1Xy3j3fd",
+    "license": "Public Domain (source page)",
+    "size": 1062692,
+    "dimensions": "Large (1300 x 865)",
+    "sha256": "f7d0b695f6415fe91acd6383da5a827003c3b734acf9fe18564cb77ca8950650"
+  },
+  {
+    "title": "Kofa desert mountains",
+    "file": "backgrounds/kofa-national-wildlife-refuge-landscape.jpg",
+    "source": "https://www.fws.gov/media/kofa-national-wildlife-refuge-landscape",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/banner_images/2022-01/Kofa%20NWR.jpg?itok=64xHzX1Z",
+    "license": "Public Domain (source page)",
+    "size": 811414,
+    "dimensions": "Large (1300 x 864)",
+    "sha256": "784c9e9a94ac8c7ec0106a73f55798827f8769722a52cc3b62a2fc76b61e96ee"
+  },
+  {
+    "title": "Baca mountain landscape",
+    "file": "backgrounds/mountain-scenic.jpg",
+    "source": "https://www.fws.gov/media/mountain-scenic",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/images/2016-07/24127.jpg?itok=xT0qXEL5",
+    "license": "Public Domain (source page)",
+    "size": 881949,
+    "dimensions": "Large (1300 x 867)",
+    "sha256": "a4b33f0d4e2d5dba15ecdba84b9256e60c5ff5a4a5617a8f5cd559510c15040a"
+  },
+  {
+    "title": "Cabeza Prieta desert",
+    "file": "backgrounds/desert-landscape.jpg",
+    "source": "https://www.fws.gov/media/desert-landscape",
+    "image": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/images/2010-12/11867.jpg?itok=SNTCvQd-",
+    "license": "Public Domain (source page)",
+    "size": 728130,
+    "dimensions": "Large (1300 x 867)",
+    "sha256": "e7f09df0288a3f94bca76f6a4429f20e3078578b3b92dd0cf48de070ac43101f"
+  }
+]

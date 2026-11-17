@@ -1,0 +1,19 @@
+{
+  "id": "org.example.minimalhome",
+  "version": "1.0.0",
+  "vendor": "LG Debloat contributors",
+  "type": "web",
+  "main": "index.html",
+  "title": "Home",
+  "uiRevision": 2,
+  "resolution": "1280x720",
+  "noSplashOnLaunch": true,
+  "disableBackHistoryAPI": true,
+  "supportQuickStart": false,
+  "inspectable": true,
+  "visible": true,
+  "requiredACG": [
+    "applications.launch"
+  ],
+  "icon": "icon.png"
+}

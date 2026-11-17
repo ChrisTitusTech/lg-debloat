@@ -1,0 +1,13 @@
+{
+  "id": "amazon.alexa.view",
+  "title": "Media plug-in",
+  "version": "4.0.19",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

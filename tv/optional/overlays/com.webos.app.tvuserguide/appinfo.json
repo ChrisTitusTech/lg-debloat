@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.tvuserguide",
+  "title": "User Guide",
+  "version": "1.0.1",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

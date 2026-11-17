@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.miracast",
+  "title": "Screen Share",
+  "version": "1.0.0",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}

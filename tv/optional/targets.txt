@@ -1,0 +1,13 @@
+com.webos.app.store-demo /usr/palm/applications/com.webos.app.store-demo
+com.webos.app.sync-demo /usr/palm/applications/com.webos.app.sync-demo
+amazon.alexa.view /usr/palm/applications/amazon.alexa.view
+com.webos.app.amazon-echo /usr/palm/applications/com.webos.app.amazon-echo
+com.webos.app.google-home /usr/palm/applications/com.webos.app.google-home
+com.webos.app.googleassistant /usr/palm/applications/com.webos.app.googleassistant
+com.webos.app.miracast /usr/palm/applications/com.webos.app.miracast
+com.webos.app.music /usr/palm/applications/com.webos.app.music
+com.webos.app.photovideo /usr/palm/applications/com.webos.app.photovideo
+com.webos.app.browser /media/system/apps/usr/palm/applications/com.webos.app.browser
+com.webos.app.tvuserguide /usr/palm/applications/com.webos.app.tvuserguide
+com.webos.app.self-diagnosis /usr/palm/applications/com.webos.app.self-diagnosis
+com.webos.app.cheeringtv /usr/palm/applications/com.webos.app.cheeringtv

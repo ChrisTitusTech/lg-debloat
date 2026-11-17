@@ -1,0 +1,13 @@
+{
+  "id": "com.webos.app.store-demo",
+  "title": "Store Demo",
+  "version": "2.0.0",
+  "type": "web",
+  "main": "index.html",
+  "visible": false,
+  "transparent": true,
+  "noSplashOnLaunch": true,
+  "supportQuickStart": false,
+  "usePrerendering": false,
+  "uiRevision": 2
+}
