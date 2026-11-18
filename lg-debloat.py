@@ -13,6 +13,8 @@ import shlex
 import subprocess
 import tempfile
 
+VERSION = "0.1"
+
 PROTECTED = {
     "com.webos.app.home",
     "com.webos.app.fullhome",
@@ -549,6 +551,7 @@ def restore(device, state, path, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--version", action="version", version="%(prog)s " + VERSION)
     parser.add_argument("action", choices=["plan", "apply", "status", "restore"])
     parser.add_argument(
         "--host", required=True, help="Trusted root SSH hostname/IP/alias"

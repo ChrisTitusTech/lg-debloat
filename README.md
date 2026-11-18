@@ -12,11 +12,13 @@ Support varies by model. Read-only planning has been tested on webOS 4.x; applyi
 
 ## Quick start
 
-Run these commands on your computer:
+Download the [latest release](https://github.com/ChrisTitusTech/lg-debloat/releases/latest) on your computer (requires `curl`):
 
 ```sh
-git clone https://github.com/ChrisTitusTech/lg-debloat.git
+mkdir -p lg-debloat
 cd lg-debloat
+curl -fL --output lg-debloat.py https://github.com/ChrisTitusTech/lg-debloat/releases/latest/download/lg-debloat.py
+python3 lg-debloat.py --version
 python3 lg-debloat.py plan --host tv
 ```
 

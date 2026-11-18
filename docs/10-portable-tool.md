@@ -32,9 +32,22 @@ Plex, YouTube, Developer Mode, Homebrew, stock Home, settings, first-use UI and 
 
 The tool opens one task-scoped SSH master, reuses its channels, then closes it. Its recovery journal is bound to the verified server host key, not a potentially reassigned LAN address. Use a separate journal for each TV. If the TV legitimately rotates its host key, investigate and plan recovery manually; do not blindly edit the journal binding.
 
+## Install or update
+
+Download the standalone script from the [latest release](https://github.com/ChrisTitusTech/lg-debloat/releases/latest); cloning the repository is only needed for development or the separate reference setup.
+
+```sh
+mkdir -p lg-debloat
+cd lg-debloat
+curl -fL --output lg-debloat.py https://github.com/ChrisTitusTech/lg-debloat/releases/latest/download/lg-debloat.py
+python3 lg-debloat.py --version
+```
+
+To update, download the script again into the same folder. Keep your `private/` folder and existing recovery journals. Read the release notes before updating. Releases also include `SHA256SUMS` to check the downloaded file; download both assets from the same version's release page and run `sha256sum -c SHA256SUMS` in their folder.
+
 ## Start with a plan
 
-From the repository root, using an SSH alias whose host key you have verified:
+From the folder containing the downloaded script, using an SSH alias whose host key you have verified:
 
 ```sh
 python3 lg-debloat.py plan --host tv
