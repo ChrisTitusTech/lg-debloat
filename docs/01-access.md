@@ -2,16 +2,37 @@
 
 ## Initial Developer Mode connection
 
-The starting point was LG Developer Mode, a LAN connection, and the webOS CLI. Follow [LG's current instructions](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app) for account setup and device registration. Use your own device address and keep the displayed passphrase private.
+These steps set up the restricted Developer Mode connection. The debloat script needs root SSH instead; see [Root and Homebrew Channel](#root-and-homebrew-channel) below before modifying an already-rooted TV.
 
-```sh
-ares-setup-device
-# Add a device named TV, using its LAN address, port 9922, user prisoner.
-ares-novacom --device TV --getkey
-ares-device --system-info --device TV
+
+- Signup for a LG Developer Account: https://webostv.developer.lge.com/develop/getting-started/developer-mode-app
+_Note: Use the login at the top right and then signup there_
+
+### TV Setup
+- Install Developer Mode from LG Content Store
+- Signin to App, Enable both Developer mode (reboot required) and Key Server in the TV App
+
+### PC Setup CLI (Terminal Setup)
+- Install Packages
+```
+npm install -g @webosose/ares-cli
+```
+- Connect to TV (Select Add and follow prompts)
+```
+ares-setup-device 
+```
+- Enter TV Key
+```
+ares-novacom --device tv2 --getkey
+```
+- Verify Connection
+```
+OPENSSL_ENABLE_SHA1_SIGNATURES=1 ares-device --system-info --device tv2
 ```
 
-Enable the Key Server in Developer Mode before retrieving the key. The Developer Mode account is restricted: its filesystem view and app inventory are not equivalent to root access or LG's remote-control inventory.
+Use `tv2` as the device name when adding the TV, or substitute your chosen name in each command. Use its LAN address, port `9922`, and SSH user `prisoner`. Keep the displayed passphrase private. The SHA-1 compatibility prefix addresses the specific handshake problem described below; it is not required on every computer.
+
+The Developer Mode account has restricted filesystem and app-inventory access.
 
 ## SSH handshake failure
 
