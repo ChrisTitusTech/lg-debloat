@@ -2,7 +2,18 @@
 
 A documented, reversible cleanup of an older LG webOS TV: keep YouTube, Plex, and TV inputs; suppress LG advertising surfaces; disable unused apps; and open a lightweight Home screen with daily landscape backgrounds.
 
-This is a **case study and reference implementation, not a universal one-command debloater**. It was developed on a 2019-era webOS 4.x TV running firmware 05.40.97. Paths, app IDs, private APIs, and rooting compatibility vary by model and firmware. The public app ID and storage paths have been anonymized; this exported edition has not been redeployed to the original TV.
+This includes a **capability-aware command-line tool plus a case study and reference implementation**. No script is verified universally across all LG models. It was developed on a 2019-era webOS 4.x TV running firmware 05.40.97. Paths, app IDs, private APIs, and rooting compatibility vary by model and firmware. The public app ID and storage paths have been anonymized; this exported edition has not been redeployed to the original TV.
+
+## Portable debloat tool
+
+Start with the [capability-aware tool guide](docs/10-portable-tool.md). It supports discovery, dry-run, apply, status and recovery through root SSH:
+
+```sh
+python3 lg-debloat.py plan --host tv
+python3 lg-debloat.py apply --host tv --profile minimal --dry-run
+```
+
+Plans do not change TV settings. Review the plan before using `apply` without `--dry-run`. The tool detects legacy/newer block-list schemas, supported settings and preload policy; refuses unknown layouts; protects core apps; and journals original values for verified restoration. Hardware validation currently covers **read-only planning on webOS 4.x**, not universal apply/restore compatibility.
 
 ## What changed
 
@@ -34,6 +45,7 @@ No firmware partitions were flashed or made writable. No blanket removal of syst
 
 | Path | Contents |
 | --- | --- |
+| `lg-debloat.py` | Capability-aware workstation CLI (Python standard library + SSH) |
 | `app/` | ES5-compatible webOS Home app; public ID `org.example.minimalhome` |
 | `tv/home/` | Home key filter, advertising overlays, startup and rollback references |
 | `tv/airplay/` | AirPlay/HomeKit disabling and rollback references |

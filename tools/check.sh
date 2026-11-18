@@ -8,5 +8,6 @@ node --check app/home.js
 node --check app/backgrounds.js
 node --check tv/home/home-keyfilter.js
 node tests/home.test.cjs
+python3 lg-debloat.py --help >/dev/null
 python3 -m unittest discover -s tests -p 'test_*.py'
 python3 tools/privacy-check.py
