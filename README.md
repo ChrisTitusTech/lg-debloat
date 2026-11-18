@@ -1,89 +1,56 @@
-# LG webOS debloat and minimal Home
+# LG webOS Debloat
 
-A documented, reversible cleanup of an older LG webOS TV: keep YouTube, Plex, and TV inputs; suppress LG advertising surfaces; disable unused apps; and open a lightweight Home screen with daily landscape backgrounds.
+Reduce LG promotions and unused background activity on a rooted LG webOS TV. Keep Plex, YouTube, Developer Mode, Homebrew, and TV inputs.
 
-This includes a **capability-aware command-line tool plus a case study and reference implementation**. No script is verified universally across all LG models. It was developed on a 2019-era webOS 4.x TV running firmware 05.40.97. Paths, app IDs, private APIs, and rooting compatibility vary by model and firmware. The public app ID and storage paths have been anonymized; this exported edition has not been redeployed to the original TV.
+The script hides selected built-in apps, turns off supported promotion settings, and stops selected apps from loading in advance. It keeps a private record so you can undo its changes. It does not uninstall apps or block ads inside YouTube, Plex, or other streaming services.
 
-## Portable debloat tool
+## Before you start
 
-Start with the [capability-aware tool guide](docs/10-portable-tool.md). It supports discovery, dry-run, apply, status and recovery through root SSH:
+You need **a rooted LG webOS TV with working root SSH access**, plus Python 3.9+ and OpenSSH on your computer. Developer Mode alone is not enough. See the [connection and setup guide](docs/01-access.md) if you need help.
+
+Support varies by model. Read-only planning has been tested on webOS 4.x; applying and undoing changes have automated tests but have not yet been verified on a real TV with this new script.
+
+## Quick start
+
+Run these commands on your computer:
 
 ```sh
+git clone https://github.com/ChrisTitusTech/lg-debloat.git
+cd lg-debloat
 python3 lg-debloat.py plan --host tv
-python3 lg-debloat.py apply --host tv --profile minimal --dry-run
 ```
 
-Plans do not change TV settings. Review the plan before using `apply` without `--dry-run`. The tool detects legacy/newer block-list schemas, supported settings and preload policy; refuses unknown layouts; protects core apps; and journals original values for verified restoration. Hardware validation currently covers **read-only planning on webOS 4.x**, not universal apply/restore compatibility.
+Replace `tv` with your TV's IP address or SSH alias. SSH must already trust the TV's host key and connect using a key without a password prompt. For connection options, see the [script guide](docs/10-portable-tool.md#prerequisites).
 
-## What changed
-
-- Removed unused third-party streaming apps through the normal uninstall mechanism.
-- Installed Homebrew Channel and established key-authenticated root SSH.
-- Replaced Advertisement and Brand Shop runtime files with inert bind-mounted overlays. The original read-only firmware files remain intact.
-- Disabled Home Promotion, advertising cookies, and the welcome feature.
-- Installed a local Home screen with YouTube, Plex, HDMI 1-3, Live TV, AV, and Component.
-- Added short-press Home routing and a held-Home fallback to LG Home.
-- Disabled AirPlay/HomeKit and 13 optional app entries using service controls, reversible executable overlays, and app launch locks.
-- Added post-install firmware-update blocking with a dedicated startup hook.
-- Added seven offline landscape photographs, changing by local calendar day and repeating weekly.
-
-No firmware partitions were flashed or made writable. No blanket removal of system services was performed. Ads inside YouTube, Plex, broadcasts, or other third-party content are not blocked by this project.
-
-## Read in order
-
-1. [Access, SSH troubleshooting, and rooting](docs/01-access.md)
-2. [Backups, inventory, and removable apps](docs/02-backup-inventory.md)
-3. [Advertising and minimal Home](docs/03-home-and-advertising.md)
-4. [AirPlay, HomeKit, and optional apps](docs/04-optional-apps.md)
-5. [Daily landscape backgrounds](docs/05-backgrounds.md)
-6. [Performance findings and verification limits](docs/06-results.md)
-7. [Rollback and recovery](docs/07-rollback.md)
-8. [Public repository privacy policy](docs/08-privacy.md)
-9. **[Post-install: block LG firmware updates](docs/09-post-install-updates.md)**
-
-## Repository layout
-
-| Path | Contents |
-| --- | --- |
-| `lg-debloat.py` | Capability-aware workstation CLI (Python standard library + SSH) |
-| `app/` | ES5-compatible webOS Home app; public ID `org.example.minimalhome` |
-| `tv/home/` | Home key filter, advertising overlays, startup and rollback references |
-| `tv/airplay/` | AirPlay/HomeKit disabling and rollback references |
-| `tv/updates/` | Post-install LG firmware updater blocking and rollback |
-| `tv/optional/` | Explicit 13-app selection, inert web app overlays, launch locks |
-| `assets/landscapes.json` | Public source URLs, license labels, and image checksums |
-| `tools/` | Local image download, rollback-payload preparation, privacy checks |
-| `tests/` | Date rotation and Home-key behavior checks |
-
-Read the guides before running anything under `tv/`: those scripts require root, make live changes, and assume verified paths. They do not install themselves. Keep backups and generated device configuration under ignored `private/`, outside public history.
-
-## Build and check locally
-
-Requires Python 3, Node.js, ShellCheck, shfmt, and LG's `ares-package` for packaging.
+**Review the plan first.** The command above does not change TV settings. To apply the default cleanup:
 
 ```sh
-python3 tools/generate-icon.py
-python3 tools/download-backgrounds.py
-node tests/home.test.cjs
-sh tools/check.sh
-mkdir -p dist
-ares-package app -o dist
+python3 lg-debloat.py apply --host tv
+python3 lg-debloat.py status --host tv
 ```
 
-The image downloader uses only Python's standard library. The TV never downloads wallpaper: JPEGs are packaged locally. Downloaded photos and build output are ignored by Git.
+Keep the generated `private/universal-state.json` file: it contains the original settings needed to undo this run. Do not share it. To undo:
 
-## Important limits
+```sh
+python3 lg-debloat.py restore --host tv
+```
 
-Root access was verified after reboot. The initial Home routing, advertising overlays, and settings also survived reboot. A follow-up reboot verified firmware-update blocking, absence of the disabled Apple/optional service processes, and all 13 optional-app launch locks. A boot hook runs after early startup, not before every LG process can start.
+For more cleanup, preview `plan --host tv --profile minimal`. Use the same `--profile minimal` option when applying. The [full script guide](docs/10-portable-tool.md) covers dry-runs, keeping specific apps, separate backups for multiple TVs, and recovery after errors.
 
-The original LG Home remains loaded for compatibility. This project does not promise a measured speedup, full firmware recovery, or compatibility with other TVs. Keep input handling, WebAppMgr, the compositor, media/DRM, and core TV services.
+## Full documentation
 
-## Upstream sources
+Start with the script guide. The other guides describe optional, model-specific work; the script does not install the custom Home screen or disable AirPlay for you.
 
-- [LG Developer Mode documentation](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app)
-- [faultmanager-autoroot](https://github.com/throwaway96/faultmanager-autoroot)
-- [webOS Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel)
-- [Root compatibility checker](https://cani.rootmy.tv/)
-- [US Fish & Wildlife Service photo sources](assets/landscapes.json)
+- [Debloat script: options, backups, and undo](docs/10-portable-tool.md)
+- [TV access and SSH troubleshooting](docs/01-access.md)
+- [Backups and app inventory](docs/02-backup-inventory.md)
+- [Advertising and a minimal Home screen](docs/03-home-and-advertising.md)
+- [AirPlay, HomeKit, and optional apps](docs/04-optional-apps.md)
+- [Daily landscape backgrounds](docs/05-backgrounds.md)
+- [Post-install: block LG firmware updates](docs/09-post-install-updates.md)
+- [Performance findings and testing limits](docs/06-results.md)
+- [Recovery for the reference setup](docs/07-rollback.md)
+- [Privacy and safe sharing](docs/08-privacy.md)
+- [Reference setup, building, and development](docs/11-reference-and-development.md)
 
-Original code and documentation here are under [MIT](LICENSE). LG software, firmware, logos, exploit code, credentials, and private backups are not redistributed. Public-domain photo provenance is recorded separately in [NOTICE](NOTICE).
+[MIT license](LICENSE). Photo credits and licensing are in [NOTICE](NOTICE).
