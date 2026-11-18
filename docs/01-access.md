@@ -19,7 +19,7 @@ npm install -g @webosose/ares-cli
 ```
 - Connect to TV (Select Add and follow prompts)
 ```
-ares-setup-device 
+ares-setup-device
 ```
 - Enter TV Key
 ```
