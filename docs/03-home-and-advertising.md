@@ -83,7 +83,7 @@ cp /var/lib/lg-debloat/home/boot.sh /var/lib/webosbrew/init.d/40-lg-minimal-home
 chmod 700 /var/lib/webosbrew/init.d/40-lg-minimal-home
 ```
 
-The hook mounts the advertising overlays, opens Home after a short delay, and reapplies the advertising settings. The key-filter configuration persists through configd. Stock startup may appear before the Homebrew hook runs.
+The hook mounts the advertising overlays and reapplies the advertising settings. Short-press Home to open the custom launcher after power-on. The key-filter configuration persists through configd. An older hook opened Home automatically after a delay, which could take focus from an app you had already launched. Replace the installed hook with the current version if you used the older setup.
 
 ## Approaches that did not solve the problem
 
