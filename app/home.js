@@ -3,9 +3,12 @@
  var tiles=document.querySelectorAll('.tile'), rows=[[0,1],[2,3,4],[5,6,7]], selected=0, bridges=[], busy=false;
  var status=document.getElementById('status');
  function focus(i){selected=Math.max(0,Math.min(tiles.length-1,i));for(var j=0;j<tiles.length;j++){tiles[j].className=tiles[j].className.replace(/ selected/g,'');tiles[j].setAttribute('tabindex',j===selected?'0':'-1');}tiles[selected].className+=' selected';tiles[selected].focus();}
- function open(i){if(busy)return;busy=true;status.textContent='Opening...';var id=tiles[i].getAttribute('data-id');
+ function open(i){if(busy)return;busy=true;status.textContent='Opening...';var tile=tiles[i], id=tile.getAttribute('data-id');
   if(typeof PalmServiceBridge==='undefined'){status.textContent='TV launch service unavailable';busy=false;return;}
   var b=new PalmServiceBridge();bridges.push(b);b.onservicecallback=function(raw){busy=false;var r;try{r=JSON.parse(raw);}catch(e){r={returnValue:false};}status.textContent=r.returnValue?'':('Could not open: '+(r.errorText||'please try again'));var n=bridges.indexOf(b);if(n!==-1)bridges.splice(n,1);};
+  // Request a normal close before webOS can reclaim and automatically reload Home.
+  // Send the launch request in the same turn, while the Home page can still use Luna.
+  if(tile.hasAttribute('data-close-home'))window.close();
   b.call('luna://com.webos.applicationManager/launch',JSON.stringify({id:id}));setTimeout(function(){busy=false;},3000);
  }
  function move(code){var r=0,c=0;for(var a=0;a<rows.length;a++){var n=rows[a].indexOf(selected);if(n!==-1){r=a;c=n;break;}}

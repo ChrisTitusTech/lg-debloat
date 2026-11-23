@@ -27,4 +27,52 @@ filter.handleMinimalHome(1, false, false);
 assert.equal(calls.pop(), 'com.webos.app.home');
 filter.applicationManager.launch = () => { throw Error('simulated failure'); };
 assert.equal(filter.handleMinimalHome(1, false, false), 0);
-console.log('Calendar rotation and Home-key routing passed.');
+
+const html = fs.readFileSync('app/index.html', 'utf8');
+const homeScript = fs.readFileSync('app/home.js', 'utf8');
+function openTile(id, useRemote, bridgeAvailable = true) {
+  const operations = [];
+  const listeners = {};
+  const status = {};
+  const tiles = [...html.matchAll(/<button class="(tile[^"]*)" data-id="([^"]+)"([^>]*)>/g)]
+    .map(([, className, appId, attributes]) => ({
+      className,
+      appId,
+      getAttribute: () => appId,
+      hasAttribute: name => attributes.trim().split(/\s+/).includes(name),
+      setAttribute() {},
+      focus() {},
+    }));
+  const app = {
+    document: {
+      querySelectorAll: () => tiles,
+      getElementById: key => key === 'status' ? status : {},
+      addEventListener: (event, listener) => { listeners[event] = listener; },
+    },
+    window: {close: () => operations.push('close')},
+    homeBackgroundForDate: () => ({file: ''}),
+    setTimeout() {},
+    setInterval() {},
+  };
+  if (bridgeAvailable) {
+    app.PalmServiceBridge = function () {
+      this.call = (uri, params) => operations.push([uri, JSON.parse(params).id]);
+    };
+  }
+  vm.runInNewContext(homeScript, app);
+  const tile = tiles.find(entry => entry.appId === id);
+  if (useRemote) {
+    tile.onmouseover();
+    listeners.keydown({keyCode: 13, preventDefault() {}});
+  } else {
+    tile.onclick();
+  }
+  return {operations, status: status.textContent};
+}
+
+const launchUri = 'luna://com.webos.applicationManager/launch';
+assert.deepEqual(openTile('youtube.leanback.v4', false).operations, ['close', [launchUri, 'youtube.leanback.v4']]);
+assert.deepEqual(openTile('cdp-30', true).operations, ['close', [launchUri, 'cdp-30']]);
+assert.deepEqual(openTile('com.webos.app.hdmi1', false).operations, [[launchUri, 'com.webos.app.hdmi1']]);
+assert.deepEqual(openTile('cdp-30', false, false), {operations: [], status: 'TV launch service unavailable'});
+console.log('Calendar rotation, Home-key routing, and streaming app handoff passed.');

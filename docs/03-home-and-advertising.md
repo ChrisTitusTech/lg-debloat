@@ -41,6 +41,8 @@ Do not reinstall Developer Mode just to run these commands after rooting. For a 
 
 The app uses `PalmServiceBridge` and `com.webos.applicationManager/launch` for each tile. IDs and inputs are firmware-specific; adjust `app/index.html` before packaging. There are three HDMI tiles because that matched the original setup, not because all LG TVs have three ports.
 
+On the reference TV, webOS could reclaim the fullscreen custom Home app during a YouTube or Plex launch and immediately request an automatic reload. The streaming tiles marked `data-close-home` request a normal Home close before sending the app launch in the same JavaScript turn. If a streaming app is unavailable, the TV may return to the previous input or app. Press Home to return to the launcher. Input tiles use the standard launch path.
+
 ## Home key routing
 
 The tiny `home-keyfilter.js` follows the native Qt key-filter interface:
