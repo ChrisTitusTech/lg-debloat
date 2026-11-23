@@ -39,9 +39,20 @@ python3 lg-debloat.py restore --host tv
 
 For more cleanup, preview `plan --host tv --profile minimal`. Use the same `--profile minimal` option when applying. The [full script guide](docs/10-portable-tool.md) covers dry-runs, keeping specific apps, separate backups for multiple TVs, and recovery after errors.
 
+## Optional custom Home
+
+From a repository checkout with `ares-package` available, preview and install the custom launcher:
+
+```sh
+python3 lg-debloat.py plan --host tv --custom-home
+python3 lg-debloat.py apply --host tv --custom-home
+```
+
+A short Home press opens the custom launcher. Hold Home for LG Home. The package is built from the checked-in app and includes the YouTube and Plex launch fix. See [compatibility and restore](docs/10-portable-tool.md#optional-custom-home).
+
 ## Full documentation
 
-Start with the script guide. The other guides describe optional, model-specific work; the script does not install the custom Home screen or disable AirPlay for you.
+Start with the script guide. The other guides cover model-specific work, including manual Home setup and disabling AirPlay.
 
 - [Debloat script: options, backups, and undo](docs/10-portable-tool.md)
 - [TV access and SSH troubleshooting](docs/01-access.md)

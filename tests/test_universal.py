@@ -90,7 +90,105 @@ class Remote:
         return {"returnValue": True}
 
 
+class HomeRemote(Remote):
+    def __init__(self):
+        super().__init__()
+        self.home_version = None
+        self.filter_source = None
+        self.chain = [
+            {"handler": "handleScreenSaver", "file": "/stock/screen.js"},
+            {"handler": "handleAccessibility", "file": "/stock/access.js"},
+            {"handler": "handleSystemKeys", "file": "/stock/system.js", "extra": True},
+        ]
+
+    def luna(self, uri, payload):
+        if uri.endswith("/listApps"):
+            result = super().luna(uri, payload)
+            result["apps"].append({"id": m.STOCK_HOME_ID})
+            if self.home_version is not None:
+                result["apps"].append({"id": m.HOME_ID, "version": self.home_version})
+            return result
+        if uri == m.HOME_CONFIG + "/getConfigs":
+            return {
+                "returnValue": True,
+                "configs": {m.HOME_CHAIN: copy.deepcopy(self.chain)},
+            }
+        if uri == m.HOME_CONFIG + "/setConfigs":
+            self.writes.append("routing")
+            self.chain = copy.deepcopy(payload["configs"][m.HOME_CHAIN])
+            return {"returnValue": True}
+        return super().luna(uri, payload)
+
+    def read_home_filter(self):
+        return self.filter_source
+
+    def write_home_filter(self, value):
+        self.writes.append("filter")
+        self.filter_source = value
+
+    def install_home(self, package):
+        self.writes.append("install")
+        self.home_version = package.decode()
+
+    def installer_request(self, method, payload, status):
+        if (method, payload, status) != ("remove", {"id": m.HOME_ID}, 31):
+            raise AssertionError((method, payload, status))
+        self.writes.append("remove")
+        self.home_version = None
+
+
 class Universal(unittest.TestCase):
+    def test_home_opt_in_and_restore_order(self):
+        r = HomeRemote()
+        device = m.Device(r)
+        self.assertFalse(any(c["kind"].startswith("home-") for c in m.plan(device)[0]))
+        changes, _ = m.plan(device, custom_home=True)
+        home = changes[:3]
+        self.assertEqual(
+            [c["kind"] for c in home], ["home-app", "home-filter", "home-routing"]
+        )
+        original = copy.deepcopy(r.chain)
+        self.assertFalse(r.writes)
+
+        device.home_package = home[0]["after"].encode()
+        with tempfile.TemporaryDirectory() as directory:
+            journal = Path(directory) / "state.json"
+            state = m.apply(device, home, journal, "fixture")
+            self.assertEqual(r.writes, ["install", "filter", "routing"])
+            self.assertEqual(r.chain[:2] + r.chain[3:], original)
+            r.chain[-1]["external"] = True
+            with self.assertRaises(m.Failure):
+                m.restore(device, state, journal)
+            self.assertEqual(r.writes, ["install", "filter", "routing"])
+            del r.chain[-1]["external"]
+            m.restore(device, state, journal)
+            self.assertEqual(r.writes[3:], ["routing", "filter", "remove"])
+            self.assertEqual(r.chain, original)
+            self.assertIsNone(r.filter_source)
+            self.assertIsNone(r.home_version)
+
+    def test_custom_home_refuses_existing_or_unfamiliar_routing(self):
+        r = HomeRemote()
+        r.chain.append({"handler": m.HOME_HANDLER, "file": "/old/home.js"})
+        with self.assertRaisesRegex(m.Failure, "Existing custom Home"):
+            m.plan(m.Device(r), custom_home=True)
+        r.chain.pop()
+        r.chain.reverse()
+        with self.assertRaisesRegex(m.Failure, "Unfamiliar Home key filter order"):
+            m.plan(m.Device(r), custom_home=True)
+        self.assertFalse(r.writes)
+
+    def test_installer_waits_for_the_terminal_reply(self):
+        ack = '{"returnValue":true,"subscribed":true}'
+        done = '{"statusValue":30,"details":{"packageId":"org.example.minimalhome"}}'
+        self.assertEqual(
+            m.installer_result([ack, done], "install", 30), json.loads(done)
+        )
+        with self.assertRaisesRegex(m.Failure, "did not confirm completion"):
+            m.installer_result([ack], "install", 30)
+        with self.assertRaisesRegex(m.Failure, "rejected"):
+            m.installer_result([ack, '{"statusValue":25}'], "remove", 31)
+
     def test_both_schemas_plan_has_no_writes_and_preserves_other_fields(self):
         for schema in ["legacy", "modern"]:
             r = Remote(schema)
@@ -236,14 +334,15 @@ class Universal(unittest.TestCase):
         from contextlib import nullcontext, redirect_stdout
         import io
 
-        r = Remote()
+        r = HomeRemote()
         r.binding = "fixture"
         with tempfile.TemporaryDirectory() as t:
             p = Path(t) / "new-directory/journal.json"
             with (
                 patch.object(m, "SSH", return_value=nullcontext(r)),
+                patch.object(m, "build_home") as build,
                 patch.object(
-                    m.sys if hasattr(m, "sys") else __import__("sys"),
+                    m.sys,
                     "argv",
                     [
                         "lg-debloat.py",
@@ -251,6 +350,7 @@ class Universal(unittest.TestCase):
                         "--host",
                         "example-tv",
                         "--dry-run",
+                        "--custom-home",
                         "--state",
                         str(p),
                     ],
@@ -258,6 +358,7 @@ class Universal(unittest.TestCase):
             ):
                 with redirect_stdout(io.StringIO()):
                     m.main()
+            build.assert_not_called()
             self.assertFalse(p.parent.exists())
             self.assertFalse(r.writes)
 

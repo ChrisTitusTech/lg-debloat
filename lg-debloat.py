@@ -3,20 +3,29 @@
 
 import argparse
 import copy
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import shlex
+import shutil
 import subprocess
+import sys
 import tempfile
 
 VERSION = "0.1"
+HOME_ID = "org.example.minimalhome"
+STOCK_HOME_ID = "com.webos.app.home"
+HOME_CONFIG = "com.webos.service.config"
+HOME_CHAIN = "com.webos.surfacemanager.keyFilters"
+HOME_HANDLER = "handleMinimalHome"
+HOME_FILTER = "/var/lib/lg-debloat-custom-home.js"
+APP_INSTALLER = "com.webos.appInstallService/dev/"
 
 PROTECTED = {
-    "com.webos.app.home",
+    STOCK_HOME_ID,
     "com.webos.app.fullhome",
     "com.webos.app.launcher",
     "com.palm.app.settings",
@@ -34,7 +43,7 @@ PROTECTED = {
     "com.webos.app.screensaver",
     "org.webosbrew.hbchannel",
     "com.palmdts.devmode",
-    "org.example.minimalhome",
+    HOME_ID,
     "youtube.leanback.v4",
     "cdp-30",
 }
@@ -96,6 +105,39 @@ def validated_path(path):
     ) or ".." in path.split("/"):
         raise Failure("Refusing unexpected preference path")
     return path
+
+
+def luna_command(uri, payload, options):
+    return (
+        "luna-send "
+        + options
+        + " "
+        + shlex.quote("luna://" + uri)
+        + " "
+        + shlex.quote(json.dumps(payload, separators=(",", ":")))
+    )
+
+
+def installer_result(output, uri, status):
+    for line in output:
+        if not line.strip():
+            continue
+        try:
+            result = json.loads(line)
+        except ValueError as exc:
+            raise Failure("Invalid TV app installer response") from exc
+        if not isinstance(result, dict):
+            raise Failure("Unexpected TV app installer response")
+        details = result.get("details")
+        if (
+            result.get("returnValue") is False
+            or (isinstance(details, dict) and "errorCode" in details)
+            or (status == 31 and result.get("statusValue") == 25)
+        ):
+            raise Failure("TV app installer rejected " + uri)
+        if result.get("statusValue") == status:
+            return result
+    raise Failure("TV app installer did not confirm completion of " + uri)
 
 
 class SSH:
@@ -184,13 +226,15 @@ class SSH:
         result = subprocess.run(
             ["ssh"] + self.options + [self.target, command],
             input=data,
-            text=True,
+            text=not isinstance(data, bytes),
             capture_output=True,
             timeout=30,
         )
         if result.returncode:
             raise Failure("Remote command failed: " + command.split()[0])
-        return result.stdout
+        return (
+            result.stdout if isinstance(result.stdout, str) else result.stdout.decode()
+        )
 
     def __exit__(self, *_):
         subprocess.run(
@@ -202,8 +246,7 @@ class SSH:
         self.temp.cleanup()
 
     def luna(self, uri, payload):
-        command = "luna-send -w 8000 -n 1 -f " + shlex.quote("luna://" + uri)
-        command += " " + shlex.quote(json.dumps(payload, separators=(",", ":")))
+        command = luna_command(uri, payload, "-w 8000 -n 1 -f")
         # Keep an interactive channel's stdin open until Luna exits. Closing it
         # early makes some webOS releases silently discard the response.
         with (
@@ -237,6 +280,66 @@ class SSH:
         if not isinstance(value, dict):
             raise Failure("Unexpected Luna response type")
         return value
+
+    def installer_request(self, method, payload, status):
+        uri = APP_INSTALLER + method
+        command = luna_command(uri, dict(payload, subscribe=True), "-w 60000 -i")
+        # Keep stdin open and read past the initial subscription acknowledgment.
+        with (
+            subprocess.Popen(
+                ["ssh", "-tt"] + self.options + [self.target, command],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ) as process,
+            ThreadPoolExecutor(max_workers=1) as pool,
+        ):
+            response = pool.submit(installer_result, process.stdout, uri, status)
+            try:
+                return response.result(timeout=65)
+            except FutureTimeout as exc:
+                raise Failure("Timed out awaiting TV app installer: " + method) from exc
+            finally:
+                if process.poll() is None:
+                    process.kill()
+
+    def install_home(self, package):
+        directory = self.run("mktemp -d /tmp/lg-debloat-home.XXXXXX").strip()
+        if not re.fullmatch(r"/tmp/lg-debloat-home\.[A-Za-z0-9]+", directory):
+            raise Failure("Unexpected temporary package directory on TV")
+        ipk = directory + "/home.ipk"
+        try:
+            self.run(
+                f"set -eu; cat > {ipk}; chmod 644 {ipk}; chmod 755 {directory}",
+                package,
+            )
+            response = self.installer_request(
+                "install", {"id": HOME_ID, "ipkUrl": ipk}, 30
+            )
+            details = response.get("details")
+            if not isinstance(details, dict) or details.get("packageId") != HOME_ID:
+                raise Failure("TV app installer reported an unexpected package ID")
+        finally:
+            self.run(f"rm -f {ipk}; rmdir {directory}")
+
+    def read_home_filter(self):
+        result = self.run(
+            f'set -eu; p={HOME_FILTER}; test ! -L "$p"; '
+            'if [ -e "$p" ]; then test -f "$p"; printf "file\\n"; cat "$p"; fi'
+        )
+        return result.removeprefix("file\n") if result else None
+
+    def write_home_filter(self, value):
+        if value is None:
+            self.run(f"rm -f {HOME_FILTER}")
+        else:
+            self.run(
+                f'set -eu; p={HOME_FILTER}; t=$(mktemp "$p.XXXXXX"); '
+                'trap \'rm -f "$t"\' EXIT; cat > "$t"; chmod 644 "$t"; '
+                'test ! -e "$p"; test ! -L "$p"; ln "$t" "$p"',
+                value,
+            )
 
     def read_file(self, path):
         path = validated_path(path)
@@ -288,6 +391,7 @@ class Device:
     def __init__(self, remote):
         self.remote = remote
         self.sam = None
+        self.home_package = None
 
     def apps(self):
         for service in [
@@ -321,6 +425,28 @@ class Device:
         )
         return r.get("settings", {}).get(key) if r.get("returnValue") is True else None
 
+    def home_chain(self):
+        response = success(
+            self.remote.luna(
+                HOME_CONFIG + "/getConfigs", {"configNames": [HOME_CHAIN]}
+            ),
+            "Read Home key filters",
+        )
+        configs = response.get("configs")
+        chain = configs.get(HOME_CHAIN) if isinstance(configs, dict) else None
+        if not isinstance(chain, list) or not all(
+            isinstance(entry, dict) and isinstance(entry.get("handler"), str)
+            for entry in chain
+        ):
+            raise Failure("Unsupported Home key filter configuration")
+        return chain
+
+    def check_home_unrouted(self):
+        if any(custom_home_filter(entry) for entry in self.home_chain()):
+            raise Failure(
+                "Restore Home key routing before removing custom Home or its filter"
+            )
+
     def read(self, change):
         kind = change["kind"]
         if kind == "file":
@@ -333,12 +459,37 @@ class Device:
         if kind == "updates":
             r = self.remote.luna("org.webosbrew.hbchannel.service/getConfiguration", {})
             return r.get("blockUpdates") if r.get("returnValue") is True else None
+        if kind == "home-app":
+            home = self.apps().get(HOME_ID)
+            if home is None:
+                return None
+            if not isinstance(home.get("version"), str):
+                raise Failure("Cannot verify installed custom Home version")
+            return home["version"]
+        if kind == "home-filter":
+            return self.remote.read_home_filter()
+        if kind == "home-routing":
+            return self.home_chain()
         raise Failure("Unknown operation kind")
 
     def write(self, change, value):
         kind = change["kind"]
         if kind == "file":
             self.remote.write_file(change["path"], value)
+            return
+        if kind == "home-app":
+            if value is None:
+                self.check_home_unrouted()
+                self.remote.installer_request("remove", {"id": HOME_ID}, 31)
+            elif self.home_package is None:
+                raise Failure("Custom Home package is missing")
+            else:
+                self.remote.install_home(self.home_package)
+            return
+        if kind == "home-filter":
+            if value is None:
+                self.check_home_unrouted()
+            self.remote.write_home_filter(value)
             return
         if kind == "setting":
             uri = "com.webos.settingsservice/setSystemSettings"
@@ -352,14 +503,132 @@ class Device:
         elif kind == "updates":
             uri = "org.webosbrew.hbchannel.service/setConfiguration"
             payload = {"blockUpdates": value}
+        elif kind == "home-routing":
+            uri = HOME_CONFIG + "/setConfigs"
+            payload = {"configs": {HOME_CHAIN: value}}
         else:
             raise Failure("Unknown operation kind")
         success(self.remote.luna(uri, payload), change["label"])
 
 
-def plan(device, profile="conservative", region=None, keep=(), block_updates=False):
+def custom_home_filter(entry):
+    return entry.get("handler") == HOME_HANDLER or entry.get("file") == HOME_FILTER
+
+
+def checkout_path():
+    return Path(__file__).resolve().parent
+
+
+def plan_home(device, apps):
+    if HOME_ID in apps:
+        raise Failure(
+            "Custom Home is already installed; use its original journal or manual rollback"
+        )
+    if STOCK_HOME_ID not in apps:
+        raise Failure(
+            "Custom Home requires the recognized LG Home app for the long-press fallback"
+        )
+    chain = device.home_chain()
+    if any(custom_home_filter(entry) for entry in chain):
+        raise Failure(
+            "Existing custom Home key routing found; use its original rollback before installing"
+        )
+    if [entry["handler"] for entry in chain[:2]] != [
+        "handleScreenSaver",
+        "handleAccessibility",
+    ]:
+        raise Failure("Unfamiliar Home key filter order; no changes made")
+    if device.remote.read_home_filter() is not None:
+        raise Failure(
+            "Custom Home filter file already exists; use its original recovery journal"
+        )
+
+    root = checkout_path()
+    try:
+        app = json.loads((root / "app/appinfo.json").read_text())
+        filter_source = (root / "tv/home/home-keyfilter.js").read_text()
+    except FileNotFoundError as exc:
+        raise Failure(
+            "--custom-home requires the full lg-debloat repository checkout"
+        ) from exc
+    version = app.get("version")
+    if (
+        app.get("id") != HOME_ID
+        or not isinstance(version, str)
+        or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version)
+    ):
+        raise Failure("Unexpected custom Home app metadata")
+    entry = {"file": HOME_FILTER, "handler": HOME_HANDLER}
+    return [
+        dict(
+            kind="home-app", before=None, after=version, label="Install custom Home app"
+        ),
+        dict(
+            kind="home-filter",
+            before=None,
+            after=filter_source,
+            label="Install custom Home key filter",
+        ),
+        dict(
+            kind="home-routing",
+            before=chain,
+            after=chain[:2] + [entry] + chain[2:],
+            label="Route short Home press to custom Home and hold to LG Home",
+        ),
+    ]
+
+
+def build_home(version):
+    packager = shutil.which("ares-package")
+    if packager is None:
+        raise Failure("Install ares-package to build custom Home")
+    root = checkout_path()
+    with tempfile.TemporaryDirectory(prefix="lg-debloat-build-") as build_dir:
+        build = Path(build_dir)
+        shutil.copytree(root / "app", build / "app")
+        if not (build / "app/icon.png").is_file():
+            generator = build / "tools/generate-icon.py"
+            generator.parent.mkdir()
+            shutil.copyfile(root / "tools/generate-icon.py", generator)
+            result = subprocess.run(
+                [sys.executable, str(generator)],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode or not (build / "app/icon.png").is_file():
+                raise Failure("Could not generate the custom Home icon")
+            (build / "app/icon.png").chmod(0o644)
+        result = subprocess.run(
+            [packager, str(build / "app"), "-o", str(build)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        package = build / f"{HOME_ID}_{version}_all.ipk"
+        if result.returncode or not package.is_file():
+            raise Failure(
+                "ares-package failed to build the custom Home IPK: "
+                + result.stderr.strip()
+            )
+        return package.read_bytes()
+
+
+def plan(
+    device,
+    profile="conservative",
+    region=None,
+    keep=(),
+    block_updates=False,
+    custom_home=False,
+):
     apps = device.apps()
     changes, notes = [], []
+    if custom_home:
+        changes.extend(plan_home(device, apps))
+        notes.append(
+            "Custom Home opens with the Home button. There is no delayed startup launch."
+        )
     targets = HIDE + (EXTRAS if profile == "minimal" else [])
     targets = [a for a in targets if a in apps and a not in keep and not protected(a)]
     files = device.remote.list_blocks()
@@ -571,14 +840,26 @@ def main():
         action="store_true",
         help="Opt in to Homebrew update-host blocking",
     )
+    parser.add_argument(
+        "--custom-home",
+        action="store_true",
+        help="Install this checkout's Home launcher and remap a short Home-button press",
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    if args.custom_home and args.action not in ("plan", "apply"):
+        parser.error("--custom-home is only used with plan or apply")
     os.umask(0o077)
     with SSH(args.host, args.identity, args.known_hosts) as remote:
         device = Device(remote)
         if args.action in ("plan", "apply"):
             changes, notes = plan(
-                device, args.profile, args.region, args.keep, args.block_updates
+                device,
+                args.profile,
+                args.region,
+                args.keep,
+                args.block_updates,
+                custom_home=args.custom_home,
             )
             for change in changes:
                 print("PLAN:", change["label"])
@@ -586,6 +867,13 @@ def main():
                 print("NOTE:", note)
             print("Planned operations:", len(changes))
             if args.action == "apply" and not args.dry_run and changes:
+                if args.custom_home:
+                    version = next(
+                        change["after"]
+                        for change in changes
+                        if change["kind"] == "home-app"
+                    )
+                    device.home_package = build_home(version)
                 apply(device, changes, args.state, remote.binding)
                 print(
                     "Applied and verified. Keep the private recovery journal:",

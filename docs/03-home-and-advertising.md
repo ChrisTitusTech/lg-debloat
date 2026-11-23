@@ -1,5 +1,7 @@
 # 3. Advertising and minimal Home
 
+For automated Home installation and Home-button routing, use [`--custom-home`](10-portable-tool.md#optional-custom-home). The steps below document the manual setup, advertising overlays, and optional boot hook.
+
 ## Restore data comes first
 
 Before touching the launcher, save the current key-filter chain and only the settings being changed. In an interactive root shell:
