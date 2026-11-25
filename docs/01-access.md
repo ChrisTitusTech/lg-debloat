@@ -5,12 +5,12 @@
 These steps set up the restricted Developer Mode connection. The debloat script needs root SSH instead; see [Root and Homebrew Channel](#root-and-homebrew-channel) below before modifying an already-rooted TV.
 
 
-- Signup for a LG Developer Account: https://webostv.developer.lge.com/develop/getting-started/developer-mode-app
-_Note: Use the login at the top right and then signup there_
+- Sign up for an LG Developer Account: https://webostv.developer.lge.com/develop/getting-started/developer-mode-app
+_Note: Use the login at the top right and then sign up there_
 
 ### TV Setup
 - Install Developer Mode from LG Content Store
-- Signin to App, Enable both Developer mode (reboot required) and Key Server in the TV App
+- Sign in to App, Enable both Developer mode (reboot required) and Key Server in the TV App
 
 ### PC Setup CLI (Terminal Setup)
 - Install Packages
