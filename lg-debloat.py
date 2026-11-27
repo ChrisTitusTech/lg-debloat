@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tempfile
 
-VERSION = "0.1"
+VERSION = "0.2-dev"
 HOME_ID = "org.example.minimalhome"
 STOCK_HOME_ID = "com.webos.app.home"
 HOME_CONFIG = "com.webos.service.config"
@@ -740,7 +740,7 @@ def plan(
         if not value:
             changes.append(dict(change, before=False, after=True))
         notes.append(
-            "Homebrew update-host blocking takes effect on reboot. See the post-install guide for stronger updater blocking."
+            "Homebrew update-host blocking takes effect on reboot. See the reference guide for scope and limitations."
         )
     return changes, notes
 
