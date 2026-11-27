@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")/.."
-find tv tools -name '*.sh' -exec sh -n {} \;
+find tv tools -name '*.sh' -exec sh -c 'for script do sh -n "$script" || exit; done' sh {} +
 find tv tools -name '*.sh' -exec shellcheck {} +
 find tv tools -name '*.sh' -exec shfmt -d {} +
 node --check app/home.js

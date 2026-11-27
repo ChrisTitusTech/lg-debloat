@@ -2,6 +2,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -138,6 +139,89 @@ class HomeRemote(Remote):
 
 
 class Universal(unittest.TestCase):
+    def test_walkthrough_plan_apply_status_restore(self):
+        from contextlib import nullcontext, redirect_stdout
+        import io
+        from unittest.mock import patch
+
+        for flags in ([], ["--profile", "minimal", "--custom-home"]):
+            with self.subTest(flags=flags), tempfile.TemporaryDirectory() as temp:
+                r = HomeRemote()
+                r.binding = "fixture"
+                before = copy.deepcopy((r.files, r.policies, r.settings, r.chain))
+                journal = Path(temp) / "private/universal-state.json"
+
+                def invoke(action, *options):
+                    output = io.StringIO()
+                    with (
+                        patch.object(m, "SSH", return_value=nullcontext(r)),
+                        patch.object(
+                            m.sys,
+                            "argv",
+                            [
+                                "lg-debloat.py", action, "--host", "example-tv",
+                                "--state", str(journal), *options,
+                            ],
+                        ),
+                        redirect_stdout(output),
+                    ):
+                        m.main()
+                    return output.getvalue()
+
+                preview = invoke("plan", *flags)
+                self.assertIn("Planned operations:", preview)
+                self.assertFalse(r.writes)
+                self.assertFalse(journal.exists())
+                with patch.object(m, "build_home", side_effect=str.encode):
+                    applied = invoke("apply", *flags)
+                self.assertTrue(applied.startswith(preview))
+                self.assertIn("Applied and verified.", applied)
+                count = len(json.loads(journal.read_text())["changes"])
+                self.assertGreater(count, 0)
+                self.assertEqual(invoke("status").count("MATCH "), count)
+                recorded = journal.read_bytes()
+                writes = copy.deepcopy(r.writes)
+                self.assertIn("Restore preview complete.", invoke("restore", "--dry-run"))
+                self.assertEqual(r.writes, writes)
+                self.assertEqual(journal.read_bytes(), recorded)
+                self.assertIn("Restored;", invoke("restore"))
+                self.assertEqual(invoke("status").count("MATCH "), count)
+                self.assertEqual(before, (r.files, r.policies, r.settings, r.chain))
+                self.assertIsNone(r.home_version)
+                self.assertIsNone(r.filter_source)
+                self.assertTrue(journal.exists())
+
+    @unittest.skipUnless(shutil.which("ares-package"), "webOS CLI not installed")
+    def test_package_build_from_clean_checkout(self):
+        from unittest.mock import patch
+
+        root = m.checkout_path()
+        with tempfile.TemporaryDirectory() as temp:
+            checkout = Path(temp)
+            shutil.copytree(
+                root / "app",
+                checkout / "app",
+                ignore=shutil.ignore_patterns("icon.png", "backgrounds"),
+            )
+            (checkout / "tools").mkdir()
+            shutil.copyfile(
+                root / "tools/generate-icon.py", checkout / "tools/generate-icon.py"
+            )
+            version = json.loads((checkout / "app/appinfo.json").read_text())["version"]
+            with patch.object(m, "checkout_path", return_value=checkout):
+                ipk = checkout / f"{m.HOME_ID}_{version}_all.ipk"
+                ipk.write_bytes(m.build_home(version))
+            info = subprocess.run(
+                ["ares-package", "-I", str(ipk)],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            self.assertIn(f"Package: {m.HOME_ID}", info)
+            self.assertIn(f"Version: {version}", info)
+            self.assertIn('"icon": "icon.png"', info)
+            self.assertFalse((checkout / "app/icon.png").exists())
+
     def test_home_opt_in_and_restore_order(self):
         r = HomeRemote()
         device = m.Device(r)
