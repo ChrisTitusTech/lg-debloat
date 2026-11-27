@@ -9,8 +9,9 @@ The site credits include USFWS, Steve Hillebrand/USFWS and Scott Rheam/USFWS;
 consult each source page for the complete attribution. The app displays the
 collection credit, and this repository makes no ownership claim over photos.
 
-No LG logos, firmware payloads, original LG manifests or upstream exploit
-scripts are included. Public app overlays are purpose-written inert pages.
+No standalone LG logos, firmware payloads, original LG manifests or upstream
+exploit scripts are included. Documentation screenshots depict the actual
+reference TV and show product interfaces and marks for identification. Public app overlays are purpose-written inert pages.
 The Home-key API approach was investigated using the TV's native key filter
 interface and the Glasshouse remote-key implementation as a reference:
 https://github.com/rorygallagher2024/glasshouse/blob/6ffc51445095ac0cbc891291ac399c93a8e82c45/server/lib/remotekeys.js

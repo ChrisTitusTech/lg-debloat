@@ -379,7 +379,11 @@ ares-package app -o dist
 ```
 
 Keep keys, pairing tokens, household identifiers, raw diagnostics, backups,
-journals, screenshots and generated packages outside Git. Review
+journals, unreviewed screenshots and generated packages outside Git. The
+README includes only manually reviewed, checksum-pinned TV captures in
+`docs/screenshots/`; an advertisement settings capture was excluded because
+it showed a device-specific advertising identifier. The screenshots depict
+the pre-existing setup, not a new portable-tool install. Review
 `git diff --cached` and run `python3 tools/privacy-check.py` after staging;
 the scanner is heuristic. Use a public-safe commit identity. If a secret
 was committed, rotate it and address history rather than just deleting the

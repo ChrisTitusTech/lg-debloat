@@ -4,6 +4,10 @@ Reduce LG promotions and unnecessary app preloading on a rooted LG TV. Keep Plex
 
 No firmware flashing, app-directory deletion, or third-party in-stream ad blocking. Changes are limited to recognized capabilities and recorded for restore.
 
+![Custom Home on the reference LG webOS TV](docs/screenshots/custom-home.png)
+
+Actual 1920 x 1080 TV captures from the previously configured reference setup, not a fresh deployment of the portable script.
+
 ## 1. Requirements
 
 - A rooted LG webOS TV with working, trusted, key-authenticated root SSH. Developer Mode alone is not enough.
@@ -21,6 +25,12 @@ python3 lg-debloat.py --version
 
 The SSH command must report UID 0. For connection troubleshooting, see the [reference guide](docs/reference.md#access-and-backups).
 
+| Homebrew Channel | Homebrew settings: root status OK, SSH enabled |
+| --- | --- |
+| ![Homebrew Channel app catalog](docs/screenshots/homebrew-channel.png) | ![Homebrew settings showing root status and SSH enabled](docs/screenshots/homebrew-settings.png) |
+
+The reference TV already had update blocking enabled; this is optional, not required for debloat.
+
 ## 2. Choose and preview your cleanup
 
 ```sh
@@ -28,6 +38,12 @@ python3 lg-debloat.py plan --host tv
 ```
 
 The default profile hides installed advertising, Brand Shop and demo tiles, disables supported promotion/ACR settings, and adjusts selected preload policies. It does not lock or uninstall apps. Unsupported settings are skipped.
+
+Example LG settings on the reference TV (menu names vary by firmware):
+
+| General > Additional Settings | Home Settings > Home Promotion off |
+| --- | --- |
+| ![Additional Settings with Quick Start Plus, Live Plus, and Screen Saver Promotion off](docs/screenshots/lg-additional-settings.png) | ![Home Promotion toggled off](docs/screenshots/lg-home-promotion.png) |
 
 For a leaner setup with more built-in tiles hidden:
 
@@ -49,6 +65,10 @@ The background download is optional: Home works with a dark fallback. The seven 
 
 The script refuses an unfamiliar key-filter chain or an existing custom Home installation. These input IDs and the long-press fallback are model-dependent.
 
+![Original LG Home launcher ribbon over custom Home](docs/screenshots/lg-home-ribbon.png)
+
+The original LG launcher remains available; this is the reference TV after cleanup, not a before-debloat screenshot.
+
 ## 3. Apply
 
 Review the plan, then apply using the **same options**. For the default profile:
@@ -68,6 +88,12 @@ python3 lg-debloat.py status --host tv
 ```
 
 Test Plex, YouTube, Settings, the inputs you use and both Home-button actions (if custom Home was installed). Reboot when ready, then run status again. Some preload policies are runtime-only and may reset on reboot.
+
+Live navigation check on the reference TV: select HDMI 1, press OK, then press Home to return. No active HDMI source was connected.
+
+| Select HDMI 1 in custom Home | HDMI 1 opened |
+| --- | --- |
+| ![HDMI 1 tile selected](docs/screenshots/hdmi-selected.png) | ![HDMI 1 input showing No Signal](docs/screenshots/hdmi-input.png) |
 
 To preview and restore the original state:
 
