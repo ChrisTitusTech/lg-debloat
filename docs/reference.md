@@ -353,10 +353,40 @@ Keep Quick Start+ off when prioritizing clean startup over rapid power-on. [LG's
 
 Plex initially appeared to fail a short foreground check; a later check showed it had opened. Allow bounded polling for cold startup rather than assuming an immediate launch response means it is already foreground.
 
-The portable minimal plan was separately verified read-only on the original
-TV, recognizing the legacy block list and runtime-only preload policy.
-The exported app and portable apply/restore have not been deployed to that TV;
-modern schemas, long-press behavior and restore are automated-test evidence,
+### Live portable-tool follow-up
+
+The existing manual setup was left installed. A live minimal plan and apply
+dry-run agreed on four remaining operations:
+
+- Add Advertisement (`com.webos.app.adapp`) and Brand Shop to the existing
+  legacy block list.
+- Disable browser and Magic Link (`com.webos.app.tips`) preload policies.
+- Disable `option/webOSPromotionVideo`.
+
+Apply recorded all four originals in a separate private journal and verified
+each write. Status matched all four, restore preview listed all four undo
+operations without changing the journal, and a repeat minimal plan reported
+zero operations. Six supported promotion/ACR settings read back as off.
+Three unsupported or unexpected settings were skipped: `general/sportsAlarm`,
+`option/livePromotion`, and `other/contentRecommendation`.
+Google Assistant was unavailable in the app inventory, so its preload entry
+was not touched. The browser and Magic Link changes are runtime-only on this
+firmware; persistence after reboot was not tested.
+
+The manual advertising overlays (2/2) and optional-app overlays (12/12)
+were still present. All 13 optional apps plus AirPlay were locked or
+unavailable. AirPlay support was disabled, Homebrew's existing update-host
+blocking setting was enabled, the custom Home key filter was present, and
+the installed Home had the streaming handoff and startup focus fixes.
+The standalone browser remained locked and its host override intact, but
+one browser-service process persisted in a separate app environment; the
+test did not forcibly terminate it.
+
+After apply, YouTube, Plex (on retry), and HDMI 1 reached foreground from
+custom Home, and short Home returned to the launcher. The TV was left on
+custom Home with cleanup active. No live rollback, fresh installation of
+the exported custom Home, or reboot was performed in this run. Modern
+schemas, held-Home behavior and full restore remain automated-test evidence,
 not hardware acceptance. Launch success is not playback verification.
 
 ## Development and privacy
@@ -380,10 +410,10 @@ ares-package app -o dist
 
 Keep keys, pairing tokens, household identifiers, raw diagnostics, backups,
 journals, unreviewed screenshots and generated packages outside Git. The
-README includes only manually reviewed, checksum-pinned TV captures in
-`docs/screenshots/`; an advertisement settings capture was excluded because
+README includes only manually reviewed, checksum-pinned TV and terminal
+captures in `docs/screenshots/`; an advertisement settings capture was excluded because
 it showed a device-specific advertising identifier. The screenshots depict
-the pre-existing setup, not a new portable-tool install. Review
+the pre-existing Home setup and an actual portable-tool apply on that TV. Review
 `git diff --cached` and run `python3 tools/privacy-check.py` after staging;
 the scanner is heuristic. Use a public-safe commit identity. If a secret
 was committed, rotate it and address history rather than just deleting the

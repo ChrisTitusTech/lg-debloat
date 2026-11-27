@@ -19,6 +19,10 @@ rules = {
 }
 # Only these exact, visually reviewed documentation captures are allowed.
 reviewed_screenshots = {
+    "docs/screenshots/cli-apply.png": "4c61e814598b620d97caa129a843d8d93cfda4dd0a1c30ddecef8fba0bdf3736",
+    "docs/screenshots/cli-plan.png": "974beaaf99382c625b5c5fe22934a9c3edaf7d4479ec31cffe827ce3c2dcacad",
+    "docs/screenshots/cli-restore-preview.png": "7e16ee2f92e00a3b64e9654d8b51dd80fd92da0765c635c7a313ee75bee37856",
+    "docs/screenshots/cli-verified.png": "d82392aa703837158fc0db472776f10ca79b85a0f3ab941f3535395456496beb",
     "docs/screenshots/custom-home.png": "8c9a59a6f81dc65a2a5c9d43fddbc989384d0fdf8a2e3358f116e934bcf9998c",
     "docs/screenshots/hdmi-input.png": "cd9e9080c52a5b972ed7be8ff33eadbd2af4260294ffb711a9ed1d57d5add3f3",
     "docs/screenshots/hdmi-selected.png": "7828f88b1607e4bd9bedf3da1e0c20bd934699c11c2ae73a7aac4dbaff393127",

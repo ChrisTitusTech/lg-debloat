@@ -6,7 +6,7 @@ No firmware flashing, app-directory deletion, or third-party in-stream ad blocki
 
 ![Custom Home on the reference LG webOS TV](docs/screenshots/custom-home.png)
 
-Actual 1920 x 1080 TV captures from the previously configured reference setup, not a fresh deployment of the portable script.
+TV images are actual 1920 x 1080 captures of the reference setup. Terminal captures below replay real script output from the same TV, using `tv` in place of its address and omitting private SSH file paths.
 
 ## 1. Requirements
 
@@ -49,7 +49,12 @@ For a leaner setup with more built-in tiles hidden:
 
 ```sh
 python3 lg-debloat.py plan --host tv --profile minimal
+python3 lg-debloat.py apply --host tv --profile minimal --dry-run
 ```
+
+Live example: even an already-debloated reference TV had four remaining supported changes. The plan and apply dry-run returned identical output.
+
+![Live minimal plan identifies four remaining operations](docs/screenshots/cli-plan.png)
 
 ### Optional: custom Home
 
@@ -81,6 +86,10 @@ If you planned the minimal/custom Home setup, append `--profile minimal` or `--p
 
 Keep `private/universal-state.json`: the script records original values before changing anything and verifies each write. The journal is private, tied to the TV's verified SSH host key, and never overwritten by a new apply.
 
+On the reference TV, the minimal profile applied all four remaining operations with a separate journal (`--state`); the existing custom Home was left installed.
+
+![Live apply succeeds and records the private recovery journal](docs/screenshots/cli-apply.png)
+
 ## 4. Verify and undo
 
 ```sh
@@ -88,6 +97,10 @@ python3 lg-debloat.py status --host tv
 ```
 
 Test Plex, YouTube, Settings, the inputs you use and both Home-button actions (if custom Home was installed). Reboot when ready, then run status again. Some preload policies are runtime-only and may reset on reboot.
+
+On the reference TV, status matched all four journaled operations and a repeat minimal plan reported **0 operations**. Three unsupported or unexpected settings were skipped; two preload changes are runtime-only.
+
+![Live status matches all four operations and a repeat plan reports zero](docs/screenshots/cli-verified.png)
 
 Live navigation check on the reference TV: select HDMI 1, press OK, then press Home to return. No active HDMI source was connected.
 
@@ -102,6 +115,10 @@ python3 lg-debloat.py restore --host tv --dry-run
 python3 lg-debloat.py restore --host tv
 python3 lg-debloat.py status --host tv
 ```
+
+On the reference TV, restore preview listed the four operations to undo; no live rollback was performed so the cleanup stayed active.
+
+![Live restore dry-run lists all four rollback operations](docs/screenshots/cli-restore-preview.png)
 
 The journal is retained after restore. Use a new `--state` path for a later apply; do not delete your only recovery record. If a write or restore fails, keep the journal, resolve the error and retry restore.
 
@@ -130,7 +147,7 @@ sh tools/check.sh
 
 The checks use local fixtures, and also build a Home IPK if `ares-package` is available. See the [development requirements](docs/reference.md#development-and-privacy).
 
-The original manual setup was tested on a 2019-era webOS 4.x TV. The portable script has read-only plan evidence on that TV and automated apply/restore tests; live apply/restore and the updated custom Home package still need hardware acceptance. No measured speedup or universal model compatibility is claimed.
+The 2019-era webOS 4.x reference TV passed a live minimal plan, apply, status, restore preview, and zero-operation replan. YouTube, Plex, HDMI 1, and Home return were checked again after apply. Full live restore, a fresh custom Home installation, and persistence after reboot remain unverified for this portable-tool run. No measured speedup or universal model compatibility is claimed.
 
 See the single [reference guide](docs/reference.md) for manual firmware-specific overlays, AirPlay/optional apps, updates, backups, build steps, recovery and observed results.
 
